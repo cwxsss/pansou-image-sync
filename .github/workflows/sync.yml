@@ -1,0 +1,29 @@
+name: Sync GHCR to Docker Hub
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: suzier
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: fish2018
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Sync image
+        run: |
+          docker pull ghcr.io/fish2018/pansou-web:latest
+          docker tag ghcr.io/fish2018/pansou-web:latest suzier/ssspanou:latest
+          docker push suzier/ssspanou:latest
