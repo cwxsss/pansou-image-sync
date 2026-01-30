@@ -19,7 +19,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: fish2018
+          username: cwxsss
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Sync image
