@@ -22,8 +22,25 @@ jobs:
           username: cwxsss
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Sync image
+      - name: Sync all tags
+        shell: bash
         run: |
-          docker pull ghcr.io/fish2018/pansou-web:latest
-          docker tag ghcr.io/fish2018/pansou-web:latest suzier/ssspanou:latest
-          docker push suzier/ssspanou:latest
+          set -e
+
+          SRC_IMAGE="ghcr.io/fish2018/pansou-web"
+          DST_IMAGE="suzier/ssspanou"
+
+          echo "Fetching tag list..."
+          TAGS=$(docker manifest inspect $SRC_IMAGE | jq -r '.manifests[].annotations["org.opencontainers.image.ref.name"]' | grep -v null || true)
+
+          if [ -z "$TAGS" ]; then
+            echo "No tags found, fallback to latest"
+            TAGS="latest"
+          fi
+
+          for tag in $TAGS; do
+            echo "Syncing tag: $tag"
+            docker pull $SRC_IMAGE:$tag
+            docker tag  $SRC_IMAGE:$tag $DST_IMAGE:$tag
+            docker push $DST_IMAGE:$tag
+          done
